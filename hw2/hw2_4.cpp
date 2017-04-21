@@ -5,25 +5,22 @@
 #include <random>
 #include <algorithm>
 #include <chrono>
-
 #include <iomanip>
 #include <ctime>
-
 #include <functional>
 
 using namespace std;
 using namespace std::chrono;
 
-#define YEAR1900 70+24*17
-//#define YEAR2000 31+24*7
-
-#define YEAR2000 70+24*14
-
 #define TEST 1
 #if TEST
   #define ITEM_COUNT 10  // for test only
+  #define YEAR1900 30+24*17
+  #define YEAR2000 30+24*20
 #else
-  #define ITEM_COUNT 100000
+  #define ITEM_COUNT 1000
+  #define YEAR1900 70
+  #define YEAR2000 31
 #endif
 
 
@@ -71,7 +68,6 @@ void print_tds_diff_days(TRADE_DATE ttd, std::vector<TRADE_DATE> tds)
         std::max(ttd.tp_begin_date, td.tp_begin_date)).count()/24 <<
         " days" << '\n';
   }
-  cout << '\n';
 }
         
 
@@ -112,8 +108,12 @@ void randomGenerator(std::vector<TRADE_DATE>& tds)
   
   time_point <system_clock,duration<int>> tp_seconds (duration<int>(0));
   system_clock::time_point tp (tp_seconds);
+#if TEST
+  system_clock::time_point rand_begin = tp + hours(24 * 365 * YEAR1900);
+#else
   system_clock::time_point rand_begin = tp - hours(24 * 365 * YEAR1900);
-  system_clock::time_point rand_end = tp - hours(24 * 365 * YEAR2000);
+#endif
+  system_clock::time_point rand_end = tp + hours(24 * 365 * YEAR2000);
 
   std::random_device rd;
   std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
@@ -176,11 +176,6 @@ class intersection_finder {
       });
     }
     
-    
-    static bool tdComp (TRADE_DATE a,TRADE_DATE b)
-    { 
-      return a.begin_date < b.begin_date;
-    }
 
     void run(std::vector<TRADE_DATE> &tds, TRADE_DATE td) {
       lambda_sort(tds);
@@ -194,13 +189,10 @@ class intersection_finder {
       auto it = std::find(to_tds.begin(), to_tds.end(), td);
       to_tds.erase(it);
         
-      std::cout << '\n';
-        
       print_tds_diff_days(td, to_tds);
-
-      std::cout << '\n';
+      cout << endl;
     }
-
+    
 };
 
 

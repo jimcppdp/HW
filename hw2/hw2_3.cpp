@@ -5,23 +5,21 @@
 #include <random>
 #include <algorithm>
 #include <chrono>
-
 #include <iomanip>
 #include <ctime>
 
 using namespace std;
 using namespace std::chrono;
 
-#define YEAR1900 70+24*17
-//#define YEAR2000 31+24*7
-
-#define YEAR2000 70+24*20
-
 #define TEST 1
 #if TEST
   #define ITEM_COUNT 10  // for test only
+  #define YEAR1900 30+24*17
+  #define YEAR2000 30+24*20
 #else
-  #define ITEM_COUNT 100000
+  #define ITEM_COUNT 1000
+  #define YEAR1900 70
+  #define YEAR2000 31
 #endif
 
 
@@ -69,7 +67,6 @@ void print_tds_diff_days(TRADE_DATE ttd, std::vector<TRADE_DATE> tds)
         std::min(ttd.tp_begin_date, td.tp_begin_date)).count()/24 <<
         " days" << '\n';
   }
-  cout << '\n';
 }
         
 
@@ -110,7 +107,11 @@ void randomGenerator(std::vector<TRADE_DATE>& tds)
   
   time_point <system_clock,duration<int>> tp_seconds (duration<int>(0));
   system_clock::time_point tp (tp_seconds);
+#if TEST
   system_clock::time_point rand_begin = tp + hours(24 * 365 * YEAR1900);
+#else
+  system_clock::time_point rand_begin = tp - hours(24 * 365 * YEAR1900);
+#endif
   system_clock::time_point rand_end = tp + hours(24 * 365 * YEAR2000);
 
   std::random_device rd;
@@ -188,10 +189,9 @@ class intersection_finder {
         to_tds.erase(it);
         
         print_tds_diff_days(td, to_tds);
-
-        std::cout << '\n';
       }
-    }
+      cout << endl;
+   }
 
 };
 
