@@ -175,31 +175,14 @@ class intersection_finder {
            ((a.begin_date == b.begin_date) && (a.end_date < b.end_date)));
       });
     }
-
-    void run(std::vector<TRADE_DATE> &tds) {
-      lambda_sort(tds);
-      
-      for (auto td : tds) {
-        std::vector<TRADE_DATE> to_tds;
-        auto lower = std::lower_bound(tds.begin(), tds.end(), td);
-        auto upper = std::upper_bound(tds.begin(), tds.end(), td);
-        
-        std::copy(lower, upper, std::back_inserter(to_tds)); 
-        std::cout << "before erase count: " << to_tds.size();
-
-        auto it = std::find(to_tds.begin(), to_tds.end(), td);
-        to_tds.erase(it);
-
-        std::cout << " after erase count: " << to_tds.size();
-        std::cout << '\n';
-        
-        print_tds_diff_days(td, to_tds);
-
-        std::cout << '\n';
-      }
-    }
     
-    void run2(std::vector<TRADE_DATE> &tds, TRADE_DATE td) {
+    
+    static bool tdComp (TRADE_DATE a,TRADE_DATE b)
+    { 
+      return a.begin_date < b.begin_date;
+    }
+
+    void run(std::vector<TRADE_DATE> &tds, TRADE_DATE td) {
       lambda_sort(tds);
       
       std::vector<TRADE_DATE> to_tds;
@@ -241,7 +224,7 @@ int main(int argc, char const *argv[])
   //ifinder.run(tds);
   
   // bind to a pointer to member function
-  std::function < void(TRADE_DATE) > new_function = std::bind(&intersection_finder::run2, &ifinder, std::ref(tds), _1);
+  std::function < void(TRADE_DATE) > new_function = std::bind(&intersection_finder::run, &ifinder, std::ref(tds), _1);
   
   new_function(tds[1]);
 
