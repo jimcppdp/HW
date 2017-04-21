@@ -34,13 +34,9 @@ class TRADE_DATE {
     system_clock::time_point tp_begin_date;
     system_clock::time_point tp_end_date;
     
-    bool operator < (TRADE_DATE b) {
-      return (this->begin_date < b.begin_date);
+    friend bool operator < (TRADE_DATE a, TRADE_DATE b) {
+      return (a.begin_date < b.begin_date);
     }
-    
-    bool operator > (TRADE_DATE b) {
-      return (this->begin_date > b.begin_date);
-    }    
 
     bool operator == (TRADE_DATE b) {
       return (this->ID == b.ID);
@@ -148,12 +144,6 @@ void randomGenerator(std::vector<TRADE_DATE>& tds)
 }
 
 
-bool myfunction (TRADE_DATE a,TRADE_DATE b)
-{ 
-  return a.begin_date < b.begin_date;
-}
-
-
 class intersection_finder {
   
   public:
@@ -189,8 +179,8 @@ class intersection_finder {
       
       for (auto td : tds) {
         std::vector<TRADE_DATE> to_tds;
-        auto lower = std::lower_bound(tds.begin(), tds.end(), td, myfunction);
-        auto upper = std::upper_bound(tds.begin(), tds.end(), td, myfunction);
+        auto lower = std::lower_bound(tds.begin(), tds.end(), td);
+        auto upper = std::upper_bound(tds.begin(), tds.end(), td);
         
         std::copy(lower, upper, std::back_inserter(to_tds)); 
 
