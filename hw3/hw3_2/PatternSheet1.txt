@@ -1,0 +1,36 @@
+Name:
+
+  Heterogeneous Hid
+
+
+Problem:
+
+  Cross platform(Window, MacOS, Linux, Android, iOS ...) 
+    with different bus (USB, BT, BLE ...) HID (Human Input Device) I/O access library
+
+
+Context:
+
+  Application can run on different platform across different type of bus to access the device.
+
+
+Forces:
+
+  Single language
+  Multiple platforms
+  Multiple type of Bus
+  Human Input Device
+  Easy of use
+
+
+Solution:
+
+  TBD
+
+
+
+Resulting Context:
+
+  TBD
+
+
