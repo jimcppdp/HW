@@ -1,4 +1,6 @@
 // pimpl.cpp
+// below can be run on Linux/MacOS to detect c/c++ memory leak
+// valgrind --leak-check=full ./pimpl
 
 #include "api.h"
 #include <iostream>
@@ -34,6 +36,7 @@ Api::Api(const std::string& name) : pImpl(new Api::Impl())
 Api::~Api()
 {
   std::cout << "Api destructor called\n";
+  delete pImpl;
 }
 
 std::string Api::getName()
@@ -75,7 +78,8 @@ TEST(backinserter_test1, test_vector)
 
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
 
-    for (int i = 0; i<100000; ++i)
+    //for (int i = 0; i<100000; ++i)
+    for (int i = 0; i<100; ++i)
     {
         data.insert(dis(gen));
         //data.push_back(dis(gen));
