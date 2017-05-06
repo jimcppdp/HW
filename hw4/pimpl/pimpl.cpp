@@ -3,6 +3,7 @@
 // valgrind --leak-check=full ./pimpl
 
 #include "api.h"
+#include <memory>
 #include <iostream>
 #include <random>
 #include <chrono>
@@ -27,7 +28,9 @@ std::ostream& operator<<(std::ostream& os, Api& api)
   << "Api Name=" << api.getName();
 }
 
-Api::Api(const std::string& name) : pImpl(new Api::Impl())
+//Api::Api(const std::string& name) : pImpl(new Api::Impl())
+//Api::Api(const std::string& name) : pImpl(std::make_shared<Api::Impl>())
+Api::Api(const std::string& name) : pImpl(std::make_unique<Api::Impl>())
 {
   std::cout << "Api constructor called\n";
   pImpl->mName = name;
@@ -36,7 +39,7 @@ Api::Api(const std::string& name) : pImpl(new Api::Impl())
 Api::~Api()
 {
   std::cout << "Api destructor called\n";
-  delete pImpl;
+  //delete pImpl;
 }
 
 std::string Api::getName()

@@ -3,7 +3,7 @@ PROG=pimpl
 INCLUDES=../../googletest/googletest/include
 LIBS=-L../../googletest/googletest/make -lgtest
 CXX=g++
-CXXFLAGS=-std=c++11 -pthread -g
+CXXFLAGS=-std=c++14 -pthread -g
 
 all: $(PROG)
 

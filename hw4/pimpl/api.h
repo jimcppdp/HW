@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <memory>
 
 class Api
 {
@@ -12,7 +13,9 @@ class Api
 
   private:
     class Impl;
-    Impl *pImpl;
+    //Impl *pImpl;
+    //std::shared_ptr<Impl> pImpl;
+    std::unique_ptr<Impl> pImpl;
 };
 
 std::ostream& operator<<(std::ostream& os, Api& api);
