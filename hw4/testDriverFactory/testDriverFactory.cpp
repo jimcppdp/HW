@@ -1,13 +1,7 @@
-// pimpl.cpp
-// below can be run on Linux/MacOS to detect c/c++ memory leak
-// valgrind --leak-check=full ./pimpl
-
-#include "driver.h"
-#include <memory>
+#include <string>
 #include <iostream>
-#include <random>
-#include <chrono>
-#include <vector>
+#include <memory>
+#include <map>
 #include "gtest/gtest.h"
 
 int main(int argc, char* argv[])
@@ -15,6 +9,25 @@ int main(int argc, char* argv[])
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+
+class IDriver
+{
+  public:
+    explicit IDriver(const std::string& name);
+    ~IDriver();
+    std::string getName();
+    bool status_check() {
+      return true;
+    }
+
+  private:
+    class Impl;
+    //Impl *pImpl;                  // version 1 regular pointer
+    //std::shared_ptr<Impl> pImpl;  // version 2 shared_ptr
+    std::unique_ptr<Impl> pImpl;    // version 3 unique_ptr
+};
+
 
 class IDriver::Impl
 {
@@ -28,67 +41,24 @@ std::ostream& operator<<(std::ostream& os, IDriver& idriver)
   << "Driver Name=" << idriver.getName();
 }
 
-//IDriver::IDriver(const std::string& name) : pImpl(new IDriver::Impl())
+//IDriver::IDriver(const std::string& name) : pImpl(new IDriver::Impl())  // version 1
 IDriver::IDriver(const std::string& name) : pImpl(std::make_unique<IDriver::Impl>())
 {
-  std::cout << "IDriver constructor called\n";
   pImpl->mName = name;
 }
 
 IDriver::~IDriver()
 {
-  std::cout << "IDriver destructor called\n";
-  //delete pImpl;
+  //delete pImpl;  // version 1
 }
 
 std::string IDriver::getName()
 {
-  return   pImpl->mName;
+  return  pImpl->mName;
 }
 
 
-public Mouse: public IDriver
-{
-}
-
-public Unknown: public IDriver
-{
-}
-
-Class DriverFactorySimpleVersion
-{
-  Public:
-    Static IDriver* create(std::string choice)
-    {
-      If (choice == “mouse”) 
-        return new Mouse;
-      Esle
-        Return new Unknown;
-     }
-}
-
-
-class Global
-{
-  int m_value;
-  static Global* s_instance;
-  Global() {};
-  
-public:
-  int getValue() { return m_value; };
-  void setValue(int value) { m_value = value; };
-  
-  static Global *instance()
-  {
-      if (!s_instance)
-        s_instance = new Global;
-      return s_instance;
-  }
-};
-Global *Global::s_instance = 0;
-
-
-
+// CSingleton is from internet somewhere
 template <typename T> 
 class CSingleton
 {
@@ -102,7 +72,6 @@ public:
     static T* Instance()
     {
         if (m_instance == NULL) {
-            cout << "m_instance is NULL" << endl;
             m_instance = new T;
         }
         
@@ -152,35 +121,55 @@ private:
 template <typename T> T* CSingleton<T>::m_instance = NULL;
 
 
-class DriverFactory: public CSingleton<DriverFactory> 
+class mouse: public IDriver
 {
-  Public:
-    std::map<std::string, std::functor<IDriver*()> > callbackmap;
-    IDriver* register(std::string, std::functor);
+  public:
+    mouse(): IDriver("mouse") {}
 
-  static DriverFactory *instance()
-  {
-      if (!s_instance)
-        s_instance = new Global;
-      return s_instance;
-  }	
-
-  Static IDriverIDriver* create(std::string choice)
-  {
-    return callbackmap[choice]();
-  }
+    static IDriver* create() {
+      return new mouse();
+    };
 };
 
-
-
-TEST_Driver_Factory (DriverFactoryTest, Creation)
+class DriverFactory: CSingleton<DriverFactory> 
 {
-	
+  public:
+    typedef IDriver* (*CreateCallback)();
+    DriverFactory() {}
+
+    static DriverFactory* get() { return Instance(); } ;
+
+    static void registerDriver(std::string choice, CreateCallback cb)
+    {
+      mCallbackMap[choice]=cb;
+    }
+
+    static void unregisterDriver(std::string choice)
+    {
+      mCallbackMap.erase(choice);
+    }
+
+    static IDriver* create(std::string choice)
+    {
+      return mCallbackMap[choice]();
+    }
+
+  private:
+    typedef std::map<std::string, CreateCallback> CallbackMap;
+    static CallbackMap mCallbackMap;
+
+};
+
+DriverFactory::CallbackMap DriverFactory::mCallbackMap;
+
+TEST(DriverFactoryTest, Creation)
+{
   IDriver *pdriver = NULL;
 
-  std::string driver_name (“mouse”);
+  std::string driver_name ("mouse");
 
-  DriverFactory::register(driver_name , &mouse::create);
+  //DriverFactory::registerCallback(driver_name , &mouse::create);
+  DriverFactory::registerDriver(driver_name , mouse::create);
 
   pdriver = DriverFactory::get()->create(driver_name);
   if( pdriver )
@@ -189,7 +178,8 @@ TEST_Driver_Factory (DriverFactoryTest, Creation)
   }
   else
   {
-      cout << “creation failed” << endl;
+      std::cout << "creation failed" << std::endl;
+      ASSERT_TRUE(false);
   }
 
 }

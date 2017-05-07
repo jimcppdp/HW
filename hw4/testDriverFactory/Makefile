@@ -13,3 +13,5 @@ $(PROG): $(SOURCE)
 clean:
 	rm -f $(PROG)
 
+run:
+	./$(PROG)
