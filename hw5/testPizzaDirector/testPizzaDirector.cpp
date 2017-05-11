@@ -184,17 +184,46 @@ TEST(DriverFactoryTest, Creation)
 
 }
 
+
+class Dough {
+  public:
+    std::string brand() { return mBrand; }
+    Dough(std::string brand) { mBrand = brand; }
+
+  private:
+    std::string mBrand;
+};
+
+class Topping {
+  public:
+    std::string name() { return mName; }
+    Topping(std::string name) { mName = name; }
+
+  private:
+    std::string mName;
+};
+
+
+class Sauce {
+  public:
+    std::string type() { return mType; }
+    Sauce(std::string type) { mType = type; }
+
+  private:
+    std::string mType;
+};
+
 class Pizza
 {
   public:
     explicit Pizza(std::string dough, std::string topping, std::string sauce)
-    : mDough(dough), mTopping(topping), mSauce(sause)
+    : mDough(dough), mTopping(topping), mSauce(sauce)
     {}
 
     ~Pizza();
-    std::string get_dough() {return mDough; }
-    std::string get_topping() {return mTopping; };
-    std::string get_sauce() {return mSauce; };
+    Dough* get_dough() {return new Dough(mDough); }
+    Topping* get_topping() {return new Topping(mTopping); };
+    Sauce* get_sauce() {return new Sauce(mSauce); };
 
   private:
     std::string mDough;
@@ -202,12 +231,90 @@ class Pizza
     std::string mSauce;
 };
 
-class pizza_director: CSingleton<pizza_director> 
+
+class IPizzaBuilder
 {
   public:
-    PizzaBuilder pb;
+    virtual Pizza* getPizza() = 0;
+};
 
-    typedef IDriver* (*CreateCallback)();
+
+class HawaiianPizzaBuilder: IPizzaBuilder
+{
+  public:
+    HawaiianPizzaBuilder()
+    {
+      mPizza = new Pizza("", "", "");
+    }
+
+    Pizza* getPizza()
+    {
+      return mPizza;
+    }
+
+    static IPizzaBuilder* create() {
+      return new HawaiianPizzaBuilder();
+    }
+
+  private:
+    Pizza* mPizza;
+};
+
+class HawaiiPizzaBuilder: IPizzaBuilder
+{
+  public:
+    HawaiiPizzaBuilder()
+    {
+      mPizza = new Pizza("CrisspyFlower", "Pineapple", "mayo");
+    }
+
+    Pizza* getPizza()
+    {
+      return mPizza;
+    }
+
+    static IPizzaBuilder* create() {
+      return new HawaiiPizzaBuilder();
+    }
+
+  private:
+    Pizza* mPizza;
+
+};
+
+class SpiceCrazPizzaBuilder: IPizzaBuilder
+{
+  public:
+    SpiceCrazPizzaBuilder()
+    {
+      mPizza = new Pizza("ToughFlower", "chili pepper", "sour sauce");
+    }
+
+    Pizza* getPizza()
+    {
+      return mPizza;
+    }
+
+    static IPizzaBuilder* create() {
+      return new SpiceCrazPizzaBuilder();
+    }
+
+  private:
+    Pizza* mPizza;
+};
+
+class pizza_director: CSingleton<pizza_director> 
+{
+    typedef IPizzaBuilder* (*CreateCallback)();
+
+  private:
+    typedef std::map<std::string, CreateCallback> CallbackMap;
+    static CallbackMap mCallbackMap;
+
+    IPizzaBuilder* pb;
+
+  public:
+
     pizza_director() {}
 
     static pizza_director* get_instance() { return Instance(); } ;
@@ -222,70 +329,68 @@ class pizza_director: CSingleton<pizza_director>
       mCallbackMap.erase(choice);
     }
 
-    static Pizza* getPizza(std::string choice)
+    Pizza* getPizza(std::string choice)
     {
-      return mCallbackMap[choice]();
-    }
+      //return mCallbackMap[choice](choice);
+      if (choice == "Hawaii") {
+          pb = (IPizzaBuilder*)new HawaiiPizzaBuilder();
+      }
+      else if (choice == "SpicyCraz") {
+          pb = (IPizzaBuilder*)new SpiceCrazPizzaBuilder();
+      }
+      else {
+          pb = nullptr;
+      }
 
-  private:
-    typedef std::map<std::string, CreateCallback> CallbackMap;
-    static CallbackMap mCallbackMap;
+      return pb->getPizza();
+      
+    }
 
 };
 pizza_director::CallbackMap pizza_director::mCallbackMap;
 
-class IPizzaBuilder
-{
-  public:
-};
-
-class HawaiianPizzaBuilder: IPizzaBuilder
-{
-  public:
-
-
-    static Pizza* create(std::string choice) {
-      return new mouse();
-    };
-};
-
-class Dough {
-  public:
-    std::string brand() { return mBrand; }
-    Dough(std::string brand) { mBrand = brand; }
-
-  private:
-    std::string mBrand;
-};
 
 TEST(testPizzaDirector, CreationHawaiiPizza)
 {
 
+  // &HawaiianPizzaBuilder::create doesn't make sense
   //pizza_director::register_pizza_builder( “Hawaii” , &HawaiianPizzaBuilder::create);
-  pizza_director::register_pizza_builder( “Hawaii” , HawaiianPizzaBuilder::create);
 
-  Pizza pizza = pizza_director::get_instance->getPizza(“Hawaii”);
-  Dough my_dough = pizza.get_dough();
-  Topping my_topping = pizza.get_topping();
-  Sauce my_sauce = pizza.get_sauce();
-  EXPECT_EQ(my_dough.brand(), “CrisspyFlower”);
-  //EXPECT_EQ(my_topping.name(), “Pineapple”);
-  //EXPECT_EQ(my_sauce.type(), “mayo”);
+  // original version, HawaiianPizzaBuilder::create works but doesn't make sense
+  pizza_director::register_pizza_builder( "Hawaii" , HawaiianPizzaBuilder::create);
+
+  // modify version, although HawaiiPizzaBuilder::create is not used at all
+  // it can be extended in future version
+  //pizza_director::register_pizza_builder( "Hawaii" , HawaiiPizzaBuilder::create);
+
+  Pizza* pizza = pizza_director::get_instance()->getPizza("Hawaii");
+  Dough* my_dough = pizza->get_dough();
+  Topping* my_topping = pizza->get_topping();
+  Sauce* my_sauce = pizza->get_sauce();
+  EXPECT_EQ(my_dough->brand(), "CrisspyFlower");
+  EXPECT_EQ(my_topping->name(), "Pineapple");
+  EXPECT_EQ(my_sauce->type(), "mayo");
 }
 
 TEST(testPizzaDirector, CreationSpicyCrazPizza)
 {
-#if 0
-  pizza_director::register_pizza_builder( “SpicyCraz” , &HawaiianPizzaBuilder::create );
+  // &HawaiianPizzaBuilder::create doesn't make sense
+  //pizza_director::register_pizza_builder( “SpicyCraz” , &HawaiianPizzaBuilder::create );
 
-  Pizza pizza = pizza_director::get_instance->getPizza(“SpicyCraz”);
-  Dough my_dough = pizza.get_dough();
-  Topping my_topping = pizza.get_topping();
-  Sauce my_sauce = pizza.get_sauce();
-  EXPECT_EQ(my_dough.brand(), “ToughFlower”);
-  EXPECT_EQ(my_topping.name(), “chili pepper”);
-  EXPECT_EQ(my_sauce.type(), “sour sauce”);
-#endif
+  // original version, HawaiianPizzaBuilder::create works but doesn't make sense
+  pizza_director::register_pizza_builder( "Hawaii" , HawaiianPizzaBuilder::create);
+
+  // modify version, although SpiceCrazPizzaBuilder::create is not used at all
+  // it can be extended in future version
+  //pizza_director::register_pizza_builder( "SpicyCraz" , SpiceCrazPizzaBuilder::create);
+
+  Pizza* pizza = pizza_director::get_instance()->getPizza("SpicyCraz");
+  Dough* my_dough = pizza->get_dough();
+  Topping* my_topping = pizza->get_topping();
+  Sauce* my_sauce = pizza->get_sauce();
+  EXPECT_EQ(my_dough->brand(), "ToughFlower");
+  EXPECT_EQ(my_topping->name(), "chili pepper");
+  EXPECT_EQ(my_sauce->type(), "sour sauce");
 }
 
 
