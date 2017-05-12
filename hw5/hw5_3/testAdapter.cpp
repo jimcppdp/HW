@@ -67,10 +67,10 @@ class AdapterTriangle: public NewShape, private Triangle
 {
   public:
 
-    AdapterTriangle(Triangle* tri): Triangle(tri->mDrawApi) 
+    AdapterTriangle(Triangle* tri): Triangle(tri->mDrawApi), mTriangle(tri) 
     { 
-      mTriangle = tri;
     }
+
     std::string newdraw()
     {
        return mTriangle->draw();
