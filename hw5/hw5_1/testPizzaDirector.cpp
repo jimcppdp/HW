@@ -121,86 +121,33 @@ class Pizza
 };
 
 
-class IPizzaBuilder
+class HawaiiPizzaBuilder
 {
   public:
-    virtual Pizza* getPizza() = 0;
-};
 
-
-class HawaiianPizzaBuilder: IPizzaBuilder
-{
-  public:
-    HawaiianPizzaBuilder()
-    {
-      mPizza = new Pizza("", "", "");
+    static Pizza* create() {
+      return new Pizza("CrisspyFlower", "Pineapple", "mayo");;
     }
-
-    Pizza* getPizza()
-    {
-      return mPizza;
-    }
-
-    static IPizzaBuilder* create() {
-      return new HawaiianPizzaBuilder();
-    }
-
-  private:
-    Pizza* mPizza;
-};
-
-class HawaiiPizzaBuilder: IPizzaBuilder
-{
-  public:
-    HawaiiPizzaBuilder()
-    {
-      mPizza = new Pizza("CrisspyFlower", "Pineapple", "mayo");
-    }
-
-    Pizza* getPizza()
-    {
-      return mPizza;
-    }
-
-    static IPizzaBuilder* create() {
-      return new HawaiiPizzaBuilder();
-    }
-
-  private:
-    Pizza* mPizza;
 
 };
 
-class SpiceCrazPizzaBuilder: IPizzaBuilder
+class SpiceCrazPizzaBuilder
 {
   public:
-    SpiceCrazPizzaBuilder()
-    {
-      mPizza = new Pizza("ToughFlower", "chili pepper", "sour sauce");
+
+    static Pizza* create() {
+      return new Pizza("ToughFlower", "chili pepper", "sour sauce");
     }
 
-    Pizza* getPizza()
-    {
-      return mPizza;
-    }
-
-    static IPizzaBuilder* create() {
-      return new SpiceCrazPizzaBuilder();
-    }
-
-  private:
-    Pizza* mPizza;
 };
 
 class pizza_director: CSingleton<pizza_director> 
 {
-    typedef IPizzaBuilder* (*CreateCallback)();
+    typedef Pizza* (*CreateCallback)();
 
   private:
     typedef std::map<std::string, CreateCallback> CallbackMap;
     static CallbackMap mCallbackMap;
-
-    IPizzaBuilder* pb;
 
   public:
 
@@ -220,19 +167,7 @@ class pizza_director: CSingleton<pizza_director>
 
     Pizza* getPizza(std::string choice)
     {
-      //return mCallbackMap[choice](choice);
-      if (choice == "Hawaii") {
-          pb = (IPizzaBuilder*)new HawaiiPizzaBuilder();
-      }
-      else if (choice == "SpicyCraz") {
-          pb = (IPizzaBuilder*)new SpiceCrazPizzaBuilder();
-      }
-      else {
-          pb = nullptr;
-      }
-
-      return pb->getPizza();
-      
+      return mCallbackMap[choice]();
     }
 
 };
@@ -241,16 +176,7 @@ pizza_director::CallbackMap pizza_director::mCallbackMap;
 
 TEST(testPizzaDirector, CreationHawaiiPizza)
 {
-
-  // &HawaiianPizzaBuilder::create doesn't make sense
-  //pizza_director::register_pizza_builder( “Hawaii” , &HawaiianPizzaBuilder::create);
-
-  // original version, HawaiianPizzaBuilder::create works but doesn't make sense
-  pizza_director::register_pizza_builder( "Hawaii" , HawaiianPizzaBuilder::create);
-
-  // modify version, although HawaiiPizzaBuilder::create is not used at all
-  // it can be extended in future version
-  //pizza_director::register_pizza_builder( "Hawaii" , HawaiiPizzaBuilder::create);
+  pizza_director::register_pizza_builder( "Hawaii" , HawaiiPizzaBuilder::create);
 
   Pizza* pizza = pizza_director::get_instance()->getPizza("Hawaii");
   Dough* my_dough = pizza->get_dough();
@@ -263,15 +189,7 @@ TEST(testPizzaDirector, CreationHawaiiPizza)
 
 TEST(testPizzaDirector, CreationSpicyCrazPizza)
 {
-  // &HawaiianPizzaBuilder::create doesn't make sense
-  //pizza_director::register_pizza_builder( “SpicyCraz” , &HawaiianPizzaBuilder::create );
-
-  // original version, HawaiianPizzaBuilder::create works but doesn't make sense
-  pizza_director::register_pizza_builder( "Hawaii" , HawaiianPizzaBuilder::create);
-
-  // modify version, although SpiceCrazPizzaBuilder::create is not used at all
-  // it can be extended in future version
-  //pizza_director::register_pizza_builder( "SpicyCraz" , SpiceCrazPizzaBuilder::create);
+  pizza_director::register_pizza_builder( "SpicyCraz" , SpiceCrazPizzaBuilder::create);
 
   Pizza* pizza = pizza_director::get_instance()->getPizza("SpicyCraz");
   Dough* my_dough = pizza->get_dough();
