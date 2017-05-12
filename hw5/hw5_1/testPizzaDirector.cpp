@@ -11,53 +11,6 @@ int main(int argc, char* argv[])
 }
 
 
-class IDriver
-{
-  public:
-    explicit IDriver(const std::string& name);
-    ~IDriver();
-    std::string getName();
-    bool status_check() {
-      return true;
-    }
-
-  private:
-    class Impl;
-    //Impl *pImpl;                  // version 1 regular pointer
-    //std::shared_ptr<Impl> pImpl;  // version 2 shared_ptr
-    std::unique_ptr<Impl> pImpl;    // version 3 unique_ptr
-};
-
-
-class IDriver::Impl
-{
-  public:
-    std::string mName;
-};
-
-std::ostream& operator<<(std::ostream& os, IDriver& idriver)
-{
-  return os
-  << "Driver Name=" << idriver.getName();
-}
-
-//IDriver::IDriver(const std::string& name) : pImpl(new IDriver::Impl())  // version 1
-IDriver::IDriver(const std::string& name) : pImpl(std::make_unique<IDriver::Impl>())
-{
-  pImpl->mName = name;
-}
-
-IDriver::~IDriver()
-{
-  //delete pImpl;  // version 1
-}
-
-std::string IDriver::getName()
-{
-  return  pImpl->mName;
-}
-
-
 // CSingleton is from internet somewhere
 template <typename T> 
 class CSingleton
@@ -119,70 +72,6 @@ private:
 
 //! static class member initialisation.
 template <typename T> T* CSingleton<T>::m_instance = NULL;
-
-
-class mouse: public IDriver
-{
-  public:
-    mouse(): IDriver("mouse") {}
-
-    static IDriver* create() {
-      return new mouse();
-    };
-};
-
-class DriverFactory: CSingleton<DriverFactory> 
-{
-  public:
-    typedef IDriver* (*CreateCallback)();
-    DriverFactory() {}
-
-    static DriverFactory* get() { return Instance(); } ;
-
-    static void registerDriver(std::string choice, CreateCallback cb)
-    {
-      mCallbackMap[choice]=cb;
-    }
-
-    static void unregisterDriver(std::string choice)
-    {
-      mCallbackMap.erase(choice);
-    }
-
-    static IDriver* create(std::string choice)
-    {
-      return mCallbackMap[choice]();
-    }
-
-  private:
-    typedef std::map<std::string, CreateCallback> CallbackMap;
-    static CallbackMap mCallbackMap;
-
-};
-
-DriverFactory::CallbackMap DriverFactory::mCallbackMap;
-
-TEST(DriverFactoryTest, Creation)
-{
-  IDriver *pdriver = NULL;
-
-  std::string driver_name ("mouse");
-
-  //DriverFactory::registerCallback(driver_name , &mouse::create);
-  DriverFactory::registerDriver(driver_name , mouse::create);
-
-  pdriver = DriverFactory::get()->create(driver_name);
-  if( pdriver )
-  {
-      EXPECT_EQ(pdriver->status_check(), true);
-  }
-  else
-  {
-      std::cout << "creation failed" << std::endl;
-      ASSERT_TRUE(false);
-  }
-
-}
 
 
 class Dough {
