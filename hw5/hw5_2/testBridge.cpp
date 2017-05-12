@@ -1,7 +1,5 @@
 #include <string>
 #include <iostream>
-#include <memory>
-#include <map>
 #include "gtest/gtest.h"
 
 int main(int argc, char* argv[])
