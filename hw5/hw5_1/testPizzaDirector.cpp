@@ -157,7 +157,7 @@ class pizza_director: CSingleton<pizza_director>
 
     static void register_pizza_builder(std::string choice, CreateCallback cb)
     {
-      mCallbackMap[choice]=cb;
+      mCallbackMap[choice]=*************************cb; // It works but weird.
     }
 
     static void unregister_pizza_builder(std::string choice)
@@ -176,7 +176,7 @@ pizza_director::CallbackMap pizza_director::mCallbackMap;
 
 TEST(testPizzaDirector, CreationHawaiiPizza)
 {
-  pizza_director::register_pizza_builder( "Hawaii" , HawaiiPizzaBuilder::create);
+  pizza_director::register_pizza_builder( "Hawaii" , &HawaiiPizzaBuilder::create);
 
   Pizza* pizza = pizza_director::get_instance()->getPizza("Hawaii");
   Dough* my_dough = pizza->get_dough();
