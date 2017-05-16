@@ -168,8 +168,8 @@ TEST(DriverFactoryTest, Creation)
 
   std::string driver_name ("mouse");
 
-  //DriverFactory::registerCallback(driver_name , &mouse::create);
-  DriverFactory::registerDriver(driver_name , mouse::create);
+  DriverFactory::registerDriver(driver_name , &mouse::create);
+  //DriverFactory::registerDriver(driver_name , mouse::create);
 
   pdriver = DriverFactory::get()->create(driver_name);
   if( pdriver )
