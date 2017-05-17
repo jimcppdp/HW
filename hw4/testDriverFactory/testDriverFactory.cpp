@@ -20,6 +20,7 @@ class IDriver
     bool status_check() {
       return true;
     }
+    virtual IDriver* create() = 0;
 
   private:
     class Impl;
@@ -120,15 +121,12 @@ private:
 //! static class member initialisation.
 template <typename T> T* CSingleton<T>::m_instance = NULL;
 
-class mouse;
-typedef std::function<IDriver*(mouse&)> CreateCallback2;
-
 class mouse: public IDriver
 {
   public:
     mouse(): IDriver("mouse") {}
 
-    IDriver* create() {
+    virtual IDriver* create() {
       return new mouse();
     };
 };
@@ -136,13 +134,20 @@ class mouse: public IDriver
 class DriverFactory: CSingleton<DriverFactory> 
 {
   public:
-    //typedef IDriver* (*CreateCallback)();
-    typedef std::function<IDriver*()> CreateCallback;
+    typedef IDriver* (*CreateCallback)();
+    typedef std::function<IDriver*()> CreateCallback2;
+    typedef std::function<IDriver*(mouse&)> CreateCallback3;
+    typedef std::function<IDriver*(IDriver&)> CreateCallback4; // not OK
+
     DriverFactory() {}
 
     static DriverFactory* get() { return Instance(); } ;
 
-    static void registerDriver(std::string choice, CreateCallback2 cb)
+    #if 1  // 0 or 1 both are OK
+    static void registerDriver(std::string choice, CreateCallback3 cb)
+    #else
+    static void registerDriver(std::string choice, std::function<IDriver*(mouse&)> cb)
+    #endif
     {
       mCallbackMap[choice]=(CreateCallback&)cb;
     }
@@ -155,13 +160,16 @@ class DriverFactory: CSingleton<DriverFactory>
     IDriver* create(std::string choice)
     {
       std::cout << "DriverFactory create is called\n";
-      //return mCallbackMap[choice]();
+      #if 1  // 0 or 1 both are OK
+      return mCallbackMap[choice]();
+      #else
       CallbackMap::iterator it = mCallbackMap.find(choice);
       if (it != mCallbackMap.end())
       {
         return (it->second());
       }
       return nullptr;
+      #endif
     }
 
   private:
