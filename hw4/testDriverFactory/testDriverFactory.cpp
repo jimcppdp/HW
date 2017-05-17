@@ -120,13 +120,15 @@ private:
 //! static class member initialisation.
 template <typename T> T* CSingleton<T>::m_instance = NULL;
 
+class mouse;
+typedef std::function<IDriver*(mouse&)> CreateCallback2;
 
 class mouse: public IDriver
 {
   public:
     mouse(): IDriver("mouse") {}
 
-    static IDriver* create() {
+    IDriver* create() {
       return new mouse();
     };
 };
@@ -134,14 +136,15 @@ class mouse: public IDriver
 class DriverFactory: CSingleton<DriverFactory> 
 {
   public:
-    typedef IDriver* (*CreateCallback)();
+    //typedef IDriver* (*CreateCallback)();
+    typedef std::function<IDriver*()> CreateCallback;
     DriverFactory() {}
 
     static DriverFactory* get() { return Instance(); } ;
 
-    static void registerDriver(std::string choice, CreateCallback cb)
+    static void registerDriver(std::string choice, CreateCallback2 cb)
     {
-      mCallbackMap[choice]=cb;
+      mCallbackMap[choice]=(CreateCallback&)cb;
     }
 
     static void unregisterDriver(std::string choice)
@@ -149,9 +152,16 @@ class DriverFactory: CSingleton<DriverFactory>
       mCallbackMap.erase(choice);
     }
 
-    static IDriver* create(std::string choice)
+    IDriver* create(std::string choice)
     {
-      return mCallbackMap[choice]();
+      std::cout << "DriverFactory create is called\n";
+      //return mCallbackMap[choice]();
+      CallbackMap::iterator it = mCallbackMap.find(choice);
+      if (it != mCallbackMap.end())
+      {
+        return (it->second());
+      }
+      return nullptr;
     }
 
   private:
