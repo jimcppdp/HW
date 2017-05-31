@@ -186,13 +186,13 @@ CarPartFactory::CallbackMap CarPartFactory::mCallbackMap;
 
 TEST(testAbstractFactory, UseCase1)
 {
-	CarPartFactory::get_instance()->register_factory(WoodenFactory::get_instance());
-	CarPartFactory::get_instance()->register_factory(SteelFactory::get_instance());
+  CarPartFactory::get_instance()->register_factory(WoodenFactory::get_instance());
+  CarPartFactory::get_instance()->register_factory(SteelFactory::get_instance());
 	
-	CarPart* wooden_wheel = CarPartFactory::get_instance()->create_wheel("wooden");
-	CarPart* steel_wheel  = CarPartFactory::get_instance()->create_wheel("steel");
-	CarPart* wooden_frame = CarPartFactory::get_instance()->create_frame("wooden");
-	CarPart* steel_frame  = CarPartFactory::get_instance()->create_frame("steel");
+  CarPart* wooden_wheel = CarPartFactory::get_instance()->create_wheel("wooden");
+  CarPart* steel_wheel  = CarPartFactory::get_instance()->create_wheel("steel");
+  CarPart* wooden_frame = CarPartFactory::get_instance()->create_frame("wooden");
+  CarPart* steel_frame  = CarPartFactory::get_instance()->create_frame("steel");
 
   EXPECT_EQ("CarPart: wooden wheel", wooden_wheel->get_info());
   EXPECT_EQ("CarPart: wooden frame", wooden_frame->get_info());
