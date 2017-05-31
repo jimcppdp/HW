@@ -94,11 +94,10 @@ class factory
     virtual std::string getName() = 0;
     virtual CarPart* create_wheel(std::string) = 0;
     virtual CarPart* create_frame(std::string) = 0;
-    virtual std::string create_wheel() = 0;
-    virtual std::string create_frame() = 0;
 };
 
 
+// TODO: add delete functions
 class WoodenFactory : public factory, CSingleton<WoodenFactory> 
 {
   private:
@@ -111,12 +110,11 @@ class WoodenFactory : public factory, CSingleton<WoodenFactory>
   
     static factory* get_instance() { return Instance(); }
     
-    virtual CarPart* create_wheel(std::string) { }
-    virtual CarPart* create_frame(std::string) { }
-    virtual std::string create_wheel() { return getName(); }
-    virtual std::string create_frame() { return getName(); }
+    virtual CarPart* create_wheel(std::string w) { return new CarPart(_name); }
+    virtual CarPart* create_frame(std::string f) { return new CarPart(_name); }
 };
 
+// TODO: add delete functions
 class SteelFactory : public factory, CSingleton<SteelFactory> 
 {
   private:
@@ -129,10 +127,8 @@ class SteelFactory : public factory, CSingleton<SteelFactory>
   
     static factory* get_instance() { return Instance(); }
     
-    virtual CarPart* create_wheel(std::string) { }
-    virtual CarPart* create_frame(std::string) { }
-    virtual std::string create_wheel() { return getName(); }
-    virtual std::string create_frame() { return getName(); }
+    virtual CarPart* create_wheel(std::string w) { return new CarPart(_name); }
+    virtual CarPart* create_frame(std::string f) { return new CarPart(_name); }
 };
 
 
@@ -150,12 +146,12 @@ class CarPartFactory : CSingleton<CarPartFactory>
   
     virtual CarPart* create_wheel(std::string w) 
     { 
-      return new CarPart("CarPart: " + mCallbackMap[w]->create_wheel() + " wheel");
+      return new CarPart("CarPart: " + mCallbackMap[w]->create_wheel("")->get_info() + " wheel");
     }
     
     virtual CarPart* create_frame(std::string f) 
     { 
-      return new CarPart("CarPart: " + mCallbackMap[f]->create_frame() + " frame");
+      return new CarPart("CarPart: " + mCallbackMap[f]->create_frame("")->get_info() + " frame");
     }
     
   private:
