@@ -58,8 +58,8 @@ main()
 
 */
 
-// TODO: make global result to local in class
-std::string result;
+// make global result to local in class
+//std::string result;
 
 class Employee // composite
 {
@@ -82,15 +82,17 @@ class Worker : public Employee // leaf
     virtual void manage(Employee* e) { }
     
     virtual std::string who() { 
-      result = result + _name + " ";
-      return _name; 
+      //result = result + _name + " ";
+      return _name + " "; 
     }
 };
 
 class Manager : public Employee // container 1
 {
+
   private:
     std::string _name;
+    std::string local_result;
     
   public:
     Manager(std::string n) : _name(n) { }
@@ -101,9 +103,17 @@ class Manager : public Employee // container 1
     }
   
     virtual std::string who() { 
-      result = result + _name + " ";
-      for_each(eList.begin(), eList.end(), std::mem_fun(&Employee::who));
-      return result;
+      //result = result + _name + " ";
+      local_result = _name + " ";
+      
+      //for_each(eList.begin(), eList.end(), std::mem_fun(&Employee::who));
+      for(auto& func: eList)
+      {
+        //std::cout << func->who();
+        local_result = local_result + func->who();
+      }      
+      
+      return local_result;
     }
 };    
 
@@ -112,6 +122,7 @@ class Director : public Employee // container 2
 {
   private:
     std::string _name;
+    std::string local_result;
     
   public:
     Director(std::string n) : _name(n) { }
@@ -123,9 +134,17 @@ class Director : public Employee // container 2
     
     virtual std::string who()
     {
-      result = _name + " ";
-      for_each(eList.begin(), eList.end(), std::mem_fun(&Employee::who));
-      return result;
+      //result = _name + " ";
+      local_result = _name + " ";
+
+      //for_each(eList.begin(), eList.end(), std::mem_fun(&Employee::who));
+      for(auto& func: eList)
+      {
+        //std::cout << func->who();
+        local_result = local_result + func->who();
+      }
+
+      return local_result;
     }
 };
 
