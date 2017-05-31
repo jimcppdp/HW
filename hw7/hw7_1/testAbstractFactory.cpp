@@ -1,8 +1,9 @@
-// Non GoogleTest Version https://repl.it/IR7X/9
+// Non GoogleTest Version https://repl.it/IR7X/9 https://repl.it/IR7X/10
 #include <string>
 #include <iostream>
 #include <memory>
 #include <map>
+#include <functional>
 #include "gtest/gtest.h"
 
 int main(int argc, char* argv[])
@@ -10,6 +11,29 @@ int main(int argc, char* argv[])
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+/*
+Class abstract factory
+{
+  Virtual product* windowCreate() = 0;
+  Virtual product* osxCreate() = 0;
+
+}
+
+Class concreteFactory
+Class ButtonFactory
+{
+  Product windowCreate()
+  {
+    Return new winButton;
+  }
+
+  Product osxCreate()
+  {
+  }
+
+}
+*/
 
 
 // CSingleton is from internet somewhere
@@ -92,12 +116,11 @@ class factory
 {
   public:
     virtual std::string getName() = 0;
-    virtual CarPart* create_wheel(std::string) = 0;
-    virtual CarPart* create_frame(std::string) = 0;
+    virtual std::string create_wheel() = 0;
+    virtual std::string create_frame() = 0;
 };
 
 
-// TODO: add delete functions
 class WoodenFactory : public factory, CSingleton<WoodenFactory> 
 {
   private:
@@ -109,12 +132,11 @@ class WoodenFactory : public factory, CSingleton<WoodenFactory>
     std::string getName() { return _name; }
   
     static factory* get_instance() { return Instance(); }
-    
-    virtual CarPart* create_wheel(std::string w) { return new CarPart(_name); }
-    virtual CarPart* create_frame(std::string f) { return new CarPart(_name); }
+
+    virtual std::string create_wheel() { return getName(); }
+    virtual std::string create_frame() { return getName(); }
 };
 
-// TODO: add delete functions
 class SteelFactory : public factory, CSingleton<SteelFactory> 
 {
   private:
@@ -127,8 +149,8 @@ class SteelFactory : public factory, CSingleton<SteelFactory>
   
     static factory* get_instance() { return Instance(); }
     
-    virtual CarPart* create_wheel(std::string w) { return new CarPart(_name); }
-    virtual CarPart* create_frame(std::string f) { return new CarPart(_name); }
+    virtual std::string create_wheel() { return getName(); }
+    virtual std::string create_frame() { return getName(); }
 };
 
 
@@ -146,12 +168,12 @@ class CarPartFactory : CSingleton<CarPartFactory>
   
     virtual CarPart* create_wheel(std::string w) 
     { 
-      return new CarPart("CarPart: " + mCallbackMap[w]->create_wheel("")->get_info() + " wheel");
+      return new CarPart("CarPart: " + mCallbackMap[w]->create_wheel() + " wheel");
     }
     
     virtual CarPart* create_frame(std::string f) 
     { 
-      return new CarPart("CarPart: " + mCallbackMap[f]->create_frame("")->get_info() + " frame");
+      return new CarPart("CarPart: " + mCallbackMap[f]->create_frame() + " frame");
     }
     
   private:
@@ -160,6 +182,7 @@ class CarPartFactory : CSingleton<CarPartFactory>
   
 };
 CarPartFactory::CallbackMap CarPartFactory::mCallbackMap;
+
 
 TEST(testAbstractFactory, UseCase1)
 {
