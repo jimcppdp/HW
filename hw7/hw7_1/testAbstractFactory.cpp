@@ -198,6 +198,11 @@ TEST(testAbstractFactory, UseCase1)
   EXPECT_EQ("CarPart: wooden frame", wooden_frame->get_info());
   EXPECT_EQ("CarPart: steel wheel", steel_wheel->get_info());
   EXPECT_EQ("CarPart: steel frame", steel_frame->get_info());
+
+  delete wooden_wheel;
+  delete steel_wheel;
+  delete wooden_frame;
+  delete steel_frame;
 }
 
 

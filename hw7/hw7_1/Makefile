@@ -15,3 +15,10 @@ clean:
 
 run:
 	./$(PROG)
+
+mc:
+	valgrind --leak-check=full ./$(PROG)
+
+memchk:
+	$(mc)
+
