@@ -106,6 +106,12 @@ TEST(testComposite, UseCase1)
 	C->manage(B);
 	D->manage(C);
   EXPECT_EQ( "Gin John Doe Mary Jean ", D->who() );
+
+  delete A;
+  delete B;
+  delete C;
+  delete D;
+
 }
 
 
