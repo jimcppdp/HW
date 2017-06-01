@@ -76,10 +76,20 @@ TEST(testComposite, UseCase1)
   all_images.push_back ( new DogImage("big") );
   all_images.push_back ( new CatImage("small") );
   all_images.push_back ( new DogImage("huge") );
+
   Image* my_image = all_images[1]->clone();
   EXPECT_EQ( "cat image: small", my_image->info() );
+  delete my_image;
+
   my_image = all_images[2]->clone();
-  EXPECT_EQ( "dog image: huge", my_image->info() );  
+  EXPECT_EQ( "dog image: huge", my_image->info() );
+  delete my_image;
+
+  for(auto image : all_images)
+  {
+    delete image;
+  }
+
 }
 
 
