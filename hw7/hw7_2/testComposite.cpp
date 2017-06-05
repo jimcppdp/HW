@@ -94,18 +94,24 @@ class Director : public Employee // container 2
     }
 };
 
-
+// TODO: valgrind still complain memory leak, is it true? 
 TEST(testComposite, UseCase1)
 {
 
-	Employee* A = new Worker("Mary");
-	Employee* B = new Worker("Jean");
-	Employee* C = new Manager("John Doe");
-	Employee* D = new Director("Gin");
-	C->manage(A);
-	C->manage(B);
-	D->manage(C);
+  Employee* A = new Worker("Mary");
+  Employee* B = new Worker("Jean");
+  Employee* C = new Manager("John Doe");
+  Employee* D = new Director("Gin");
+  C->manage(A);
+  C->manage(B);
+  D->manage(C);
   EXPECT_EQ( "Gin John Doe Mary Jean ", D->who() );
+
+  delete A;
+  delete B;
+  delete C;
+  delete D;
+
 }
 
 

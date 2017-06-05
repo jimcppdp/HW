@@ -10,8 +10,14 @@ all: $(PROG)
 $(PROG): $(SOURCE)
 	$(CXX) $(CXXFLAGS) -I$(INCLUDES) $(SOURCE) -o$(PROG) $(LIBS)
 
+.PHONY: clean
 clean:
 	rm -f $(PROG)
 
 run:
 	./$(PROG)
+
+mc:
+	valgrind --leak-check=full ./$(PROG)
+
+memchk: mc
