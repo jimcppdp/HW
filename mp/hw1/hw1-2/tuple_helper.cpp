@@ -41,11 +41,35 @@ template <int v> struct Int2Type { enum { value = v }; };
 
 template <class Tuple> struct Length { enum { value = tuple_size<Tuple>::value }; };
 
+#if 0
 // TypeAt just using std::tuple_element
 template <class Tuple, unsigned int index>
 struct TypeAt
 {
   using type = typename tuple_element<index-1, Tuple>::type; // OK
+};
+#endif
+
+
+// tuple_element
+template<class T, std::size_t I> 
+struct TypeAt_;
+
+template<class Head, class... Tail, std::size_t I>
+struct TypeAt_<std::tuple<Head, Tail...>, I>
+  : TypeAt_<std::tuple<Tail...>, I-1>
+{ };
+
+template <class Head, class... Tail>
+struct TypeAt_<std::tuple<Head, Tail...>, 0>
+{
+  typedef Head type;
+};
+
+template<class T, std::size_t I> 
+struct TypeAt
+{
+  using type = typename TypeAt_<T, I-1>::type;
 };
 
 
@@ -276,12 +300,13 @@ template<template<class...> class L, class T1, class... T>
     using type = mp_if<mp_contains<_rest, T1>, _rest, mp_push_front<_rest, T1>>;
 };
 
-
+#if 0
 template<class L>
 struct NoDuplicates
 {
   using type = typename mp_unique_impl<L>::type;
 };
+#endif
 
 #if 0
 template <class Tuple> 
@@ -323,6 +348,59 @@ struct ReplaceAll
 }
 ;
 
+
+#if 0
+template<template<class...> class L, class... U, class T>
+struct Append_<L<U...>, T>
+{
+  using type = L<U..., T>;
+};
+#endif
+
+// no dup
+template<class...> 
+struct NoDuplicates;
+
+template<class Head, class... Tail > 
+struct NoDuplicates< Head, Head, Tail... >
+  : NoDuplicates<Tail...>
+{ };
+
+template<template<class...> class L, class... U>
+struct NoDuplicates< L<U...> >
+{
+  using type = L<U...>;
+};
+
+#if 0
+template <class T>
+struct NoDuplicates<T>
+{
+  using type = std::tuple<T>;
+};
+#endif
+
+template<int...> 
+struct ISuniq;
+
+template<int Head, int... Tail > 
+struct ISuniq< Head, Head, Tail... >
+{
+  static const bool value = false;
+};
+
+template <int T, int Head, int... Tail>
+struct ISuniq < T, Head, Tail... >
+  : ISuniq< T, Tail... >
+{ };
+
+template <int T>
+struct ISuniq < T >
+{
+  static const bool value = true;
+};
+
+
 int main()
 {
   using MyTuple1 = tuple<int, double, string, char, bool, string>;
@@ -336,7 +414,7 @@ int main()
 
   static_assert( is_same< ReplaceAll < MyTuple1, string, long >::type, MyTuple2 >::value ,"");
   static_assert( is_same< Replace < MyTuple1, char, bool >::type, MyTuple3 >::value ,"");
-  static_assert( is_same< NoDuplicates< MyTuple1 >::type, MyTuple4 >::value ,"");
+  //static_assert( is_same< NoDuplicates< MyTuple1 >::type, MyTuple4 >::value ,"");
   static_assert( is_same< Int2Type<Length < MyTuple1 >::value>, Int2Type<6> >::value ,"");
   static_assert( is_same< TypeAt < MyTuple1, 2>::type, double >::value ,"");
   static_assert( is_same< Int2Type<IndexOf < MyTuple1, string>::value>, Int2Type<2> >::value ,"");
@@ -350,7 +428,8 @@ int main()
   using mytype_count = mp_count<MyTuple1, string>;
   PRINT_NAME_OF_TYPE(mytype_count);
 
-  using mytype_noduplicate = NoDuplicates< MyTuple1 >::type;
+  cout << "NoDuplicates=" << endl;
+  using mytype_noduplicate = NoDuplicates< MyTuple2 >::type;
   PRINT_NAME_OF_TYPE(mytype_noduplicate);
 
   //std::cout << "mp_count = " << mp_count<MyTuple1>;
